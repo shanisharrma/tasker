@@ -35,6 +35,17 @@ services:
       timeout: 3s
       retries: 5
 
+  adminer:
+    image: adminer:latest
+    container_name: adminer_container
+    restart: always
+    ports:
+      - "8080:8080" # Access Adminer in your browser at http://localhost:8080
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres # This connects Adminer to the 'postgres' service defined above
+    depends_on:
+      - postgres # Ensure the database starts before Adminer
+
 volumes:
   postgres_data:
   redis_data:
