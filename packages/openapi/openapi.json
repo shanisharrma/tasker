@@ -15,79 +15,611 @@
             "description": "200",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "enum": [
-                        "healthy",
-                        "unhealthy"
-                      ]
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time"
-                    },
-                    "environment": {
-                      "type": "string"
-                    },
-                    "checks": {
-                      "type": "object",
-                      "properties": {
-                        "database": {
-                          "type": "object",
-                          "properties": {
-                            "status": {
-                              "type": "string"
-                            },
-                            "response_time": {
-                              "type": "string"
-                            },
-                            "error": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "status",
-                            "response_time"
-                          ]
-                        },
-                        "redis": {
-                          "type": "object",
-                          "properties": {
-                            "status": {
-                              "type": "string"
-                            },
-                            "response_time": {
-                              "type": "string"
-                            },
-                            "error": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "status",
-                            "response_time"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "database"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "status",
-                    "timestamp",
-                    "environment",
-                    "checks"
-                  ]
-                }
+                "schema": {}
               }
             }
           }
         }
+      }
+    },
+    "/v1/todos": {
+      "get": {
+        "description": "Get all todos",
+        "summary": "Get All Todos",
+        "tags": [
+          "Todo"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "categoryId",
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "parentTodoId",
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "dueFrom",
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "dueTo",
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "overdue",
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "completed",
+            "in": "query",
+            "schema": {}
+          }
+        ],
+        "operationId": "getTodos",
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "description": "Create a new todo",
+        "summary": "Create a new todo",
+        "tags": [
+          "Todo"
+        ],
+        "parameters": [],
+        "operationId": "createTodo",
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/todos/{id}": {
+      "get": {
+        "description": "Get todo by ID",
+        "summary": "Get todo by ID",
+        "tags": [
+          "Todo"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "getTodoById",
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "description": "Update todo",
+        "summary": "Update todo",
+        "tags": [
+          "Todo"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "updateTodo",
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "description": "Delete todo",
+        "summary": "Delete todo",
+        "tags": [
+          "Todo"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "deleteTodo",
+        "responses": {
+          "204": {
+            "description": "204",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/todos/stats": {
+      "get": {
+        "description": "Get todo statistics",
+        "summary": "Get todo statistics",
+        "tags": [
+          "Todo"
+        ],
+        "parameters": [],
+        "operationId": "getTodoStats",
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/todos/{id}/comments": {
+      "post": {
+        "summary": "Add comment to todo",
+        "tags": [
+          "comment"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "addComment",
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Get comments for todo",
+        "tags": [
+          "comment"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "getCommentsByTodoId",
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/comments/{id}": {
+      "patch": {
+        "summary": "Update comment",
+        "tags": [
+          "comment"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "updateComment",
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Delete comment",
+        "tags": [
+          "comment"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "deleteComment",
+        "responses": {
+          "204": {
+            "description": "204",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/categories": {
+      "get": {
+        "description": "Get all categories",
+        "summary": "Get all categories",
+        "tags": [
+          "category"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {}
+          }
+        ],
+        "operationId": "getCategories",
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "description": "Create a new category",
+        "summary": "Create a new category",
+        "tags": [
+          "category"
+        ],
+        "parameters": [],
+        "operationId": "createCategory",
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/categories/{id}": {
+      "get": {
+        "description": "Get category by ID",
+        "summary": "Get category by ID",
+        "tags": [
+          "category"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "getCategoryById",
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "description": "Update category",
+        "summary": "Update category",
+        "tags": [
+          "category"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "updateCategory",
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "description": "Delete category",
+        "summary": "Delete category",
+        "tags": [
+          "category"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "deleteCategory",
+        "responses": {
+          "204": {
+            "description": "204",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     }
   },
@@ -98,7 +630,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:8080",
+      "url": "http://localhost:8000/api",
       "description": "Local Server"
     }
   ],
