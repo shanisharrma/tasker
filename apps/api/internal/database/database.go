@@ -32,9 +32,9 @@ type multiTracer struct {
 func (mt *multiTracer) TraceQueryStart(ctx context.Context, conn *pgx.Conn, data pgx.TraceQueryStartData) context.Context {
 	for _, tracer := range mt.tracers {
 		if t, ok := tracer.(interface {
-			TracerQueryStart(context.Context, *pgx.Conn, pgx.TraceQueryStartData) context.Context
+			TraceQueryStart(context.Context, *pgx.Conn, pgx.TraceQueryStartData) context.Context
 		}); ok {
-			ctx = t.TracerQueryStart(ctx, conn, data)
+			ctx = t.TraceQueryStart(ctx, conn, data)
 		}
 	}
 	return ctx
