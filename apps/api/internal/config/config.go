@@ -18,7 +18,8 @@ type Config struct {
 	Redis         RedisConfig          `koanf:"redis" validate:"required"`
 	Integration   IntegrationConfig    `koanf:"integration" validate:"required"`
 	Auth          AuthConfig           `koanf:"auth" validate:"required"`
-	Observability *ObservabilityConfig `konaf:"observability" `
+	Observability *ObservabilityConfig `konaf:"observability"`
+	AWS           AWSConfig            `koanf:"aws" validate:"required"`
 }
 
 type Primary struct {
@@ -56,6 +57,14 @@ type IntegrationConfig struct {
 
 type AuthConfig struct {
 	SecretKey string `koanf:"secret_key" validate:"required"`
+}
+
+type AWSConfig struct {
+	Region          string `koanf:"region" validate:"required"`
+	AccessKeyID     string `koanf:"access_key_id" validate:"required"`
+	SecretAccessKey string `koanf:"secret_access_key" validate:"required"`
+	UploadBucket    string `koanf:"upload_bucket" validate:"required"`
+	EndpointURL     string `koanf:"endpoint_url"`
 }
 
 func LoadConfig() (*Config, error) {

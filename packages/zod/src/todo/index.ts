@@ -46,6 +46,7 @@ export const ZPopulatedTodo = ZTodo.extend({
   category: ZTodoCategory.nullable(),
   children: z.array(ZTodo),
   comments: z.array(ZTodoComment),
+  attachments: z.array(ZTodoAttachment),
 });
 
 export const ZTodoStats = z.object({
