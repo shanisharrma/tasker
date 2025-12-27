@@ -3,9 +3,6 @@ package database
 import (
 	"context"
 	"fmt"
-	"net"
-	"net/url"
-	"strconv"
 	"time"
 
 	pgxzero "github.com/jackc/pgx-zerolog"
@@ -54,17 +51,8 @@ func (mt *multiTracer) TraceQueryEnd(ctx context.Context, conn *pgx.Conn, data p
 const DatabasePingTimeout = 10
 
 func New(cfg *config.Config, logger *zerolog.Logger, loggerService *loggerConfig.LoggerService) (*Database, error) {
-	hostPort := net.JoinHostPort(cfg.Database.Host, strconv.Itoa(cfg.Database.Port))
 
-	// URL-encode the password
-	encodedPassword := url.QueryEscape(cfg.Database.Password)
-	dsn := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=%s",
-		cfg.Database.User,
-		encodedPassword,
-		hostPort,
-		cfg.Database.Name,
-		cfg.Database.SSLMode,
-	)
+	dsn := cfg.Database.DSN()
 
 	pgxPoolConfig, err := pgxpool.ParseConfig(dsn)
 	if err != nil {

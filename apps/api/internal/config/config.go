@@ -1,7 +1,11 @@
 package config
 
 import (
+	"fmt"
+	"net"
+	"net/url"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -131,4 +135,18 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return mainConfig, nil
+}
+
+func (d DatabaseConfig) DSN() string {
+	hostPort := net.JoinHostPort(d.Host, strconv.Itoa(d.Port))
+
+	// URL-encode the password
+	encodedPassword := url.QueryEscape(d.Password)
+	return fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=%s",
+		d.User,
+		encodedPassword,
+		hostPort,
+		d.Name,
+		d.SSLMode,
+	)
 }

@@ -5,9 +5,6 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
-	"net"
-	"net/url"
-	"strconv"
 
 	"github.com/shanisharrma/tasker/internal/config"
 
@@ -20,17 +17,8 @@ import (
 var migrations embed.FS
 
 func Migrate(ctx context.Context, logger *zerolog.Logger, cfg *config.Config) error {
-	hostPort := net.JoinHostPort(cfg.Database.Host, strconv.Itoa(cfg.Database.Port))
 
-	// URL-encode the password
-	encodedPassword := url.QueryEscape(cfg.Database.Password)
-	dsn := fmt.Sprintf("postgress://%s:%s@%s/%s?sslmode=%s",
-		cfg.Database.User,
-		encodedPassword,
-		hostPort,
-		cfg.Database.Name,
-		cfg.Database.SSLMode,
-	)
+	dsn := cfg.Database.DSN()
 
 	conn, err := pgx.Connect(ctx, dsn)
 	if err != nil {
