@@ -5,84 +5,50 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
-	"github.com/newrelic/go-agent/v3/integrations/nrredis-v9"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
-	"github.com/shanisharrma/tasker/internal/config"
-	"github.com/shanisharrma/tasker/internal/database"
-	"github.com/shanisharrma/tasker/internal/lib/job"
-	loggerPkg "github.com/shanisharrma/tasker/internal/logger"
+	"github.com/shanisharrma/tasker/internal/infra/database"
+	loggerPkg "github.com/shanisharrma/tasker/internal/infra/logger"
+	"github.com/shanisharrma/tasker/internal/shared/aws"
+	"github.com/shanisharrma/tasker/internal/shared/config"
 )
+
+type JobRunner interface {
+	Start() error
+	Stop()
+}
 
 type Server struct {
 	Config        *config.Config
 	Logger        *zerolog.Logger
 	LoggerService *loggerPkg.LoggerService
 	DB            *database.Database
+	AWS           *aws.AWS
 	Redis         *redis.Client
 	httpServer    *http.Server
-	Job           *job.JobService
 }
 
-func New(cfg *config.Config, logger *zerolog.Logger, loggerService *loggerPkg.LoggerService) (*Server, error) {
-	db, err := database.New(cfg, logger, loggerService)
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize database: %w", err)
-	}
-
-	// Redis client with New Relic integration
-	redisClient := redis.NewClient(&redis.Options{
-		Addr: cfg.Redis.Address,
-	})
-
-	// Add New Relic Redis hooks if available
-	if loggerService != nil && loggerService.GetApplication() != nil {
-		redisClient.AddHook(nrredis.NewHook(redisClient.Options()))
-	}
-
-	// Test Redis connection
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	if err := redisClient.Ping(ctx).Err(); err != nil {
-		logger.Error().Err(err).Msg("Failed to connect to Redis, continuing without Redis")
-		// don't fail startup if Redis is unavailable
-	}
-
-	// JobService
-	jobService := job.NewJobService(logger, cfg)
-	jobService.InitHandlers(cfg, logger)
-
-	// Start job server
-	if err := jobService.Start(); err != nil {
-		return nil, err
-	}
-
-	server := &Server{
+func New(
+	cfg *config.Config,
+	logger *zerolog.Logger,
+	loggerService *loggerPkg.LoggerService,
+	db *database.Database,
+	aws *aws.AWS,
+	redis *redis.Client,
+) *Server {
+	return &Server{
 		Config:        cfg,
 		Logger:        logger,
 		LoggerService: loggerService,
 		DB:            db,
-		Redis:         redisClient,
-		Job:           jobService,
+		AWS:           aws,
+		Redis:         redis,
 	}
-
-	// Start metrics collection
-	// Runtime metrics are automatically collected by New Relic go agent
-
-	return server, nil
 }
 
-func (s *Server) SetupHTTPServer(handler http.Handler) {
-	s.httpServer = &http.Server{
-		Addr:         ":" + s.Config.Server.Port,
-		Handler:      handler,
-		ReadTimeout:  time.Duration(s.Config.Server.ReadTimeout) * time.Second,
-		WriteTimeout: time.Duration(s.Config.Server.WriteTimeout) * time.Second,
-		IdleTimeout:  time.Duration(s.Config.Server.IdleTimeout) * time.Second,
-	}
+func (s *Server) SetupHTTPServer(server *http.Server) {
+	s.httpServer = server
 }
 
 func (s *Server) Start() error {
@@ -99,12 +65,18 @@ func (s *Server) Start() error {
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
-	if err := s.httpServer.Shutdown(ctx); err != nil {
-		return fmt.Errorf("failed to close database connection: %w", err)
+	if s.httpServer != nil {
+		if err := s.httpServer.Shutdown(ctx); err != nil {
+			return fmt.Errorf("failed to shutdown http server: %w", err)
+		}
 	}
 
-	if s.Job != nil {
-		s.Job.Stop()
+	if s.Redis != nil {
+		_ = s.Redis.Close()
+	}
+
+	if s.DB != nil {
+		_ = s.DB.Close()
 	}
 
 	return nil

@@ -1,0 +1,99 @@
+package middleware
+
+import (
+	"encoding/json"
+	"net/http"
+	"time"
+
+	"github.com/clerk/clerk-sdk-go/v2"
+	clerkhttp "github.com/clerk/clerk-sdk-go/v2/http"
+	"github.com/labstack/echo/v4"
+	"github.com/shanisharrma/tasker/internal/server"
+	"github.com/shanisharrma/tasker/internal/shared/errs"
+)
+
+type AuthMiddleware struct {
+	server *server.Server
+}
+
+func NewAuthMiddleware(s *server.Server) *AuthMiddleware {
+	return &AuthMiddleware{
+		server: s,
+	}
+}
+
+func (auth *AuthMiddleware) RequireAuth(next echo.HandlerFunc) echo.HandlerFunc {
+
+	clerkMiddleware := clerkhttp.WithHeaderAuthorization(
+		clerkhttp.AuthorizationFailureHandler(
+			http.HandlerFunc(auth.unauthorizedHandler),
+		),
+	)
+
+	return func(c echo.Context) error {
+		// Wrap Clerk middleware but intercept execution
+		handler := echo.WrapMiddleware(clerkMiddleware)(
+			func(c echo.Context) error {
+				// Clerk auth succeeded, now enrich context
+				return auth.handleAuthorized(c, next)
+			},
+		)
+
+		// After Clerk auth succeeded
+		return handler(c)
+	}
+
+}
+
+func (auth *AuthMiddleware) unauthorizedHandler(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusUnauthorized)
+
+	response := map[string]string{
+		"code":     "UNAUTHORIZED",
+		"message":  "Unauthorized",
+		"override": "false",
+		"status":   "401",
+	}
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		auth.server.Logger.Error().
+			Err(err).
+			Str("function", "RequireAuth").
+			Dur("duration", time.Since(start)).
+			Msg("failed to write JSON response")
+	}
+}
+
+func (auth *AuthMiddleware) handleAuthorized(
+	c echo.Context,
+	next echo.HandlerFunc,
+) error {
+	start := time.Now()
+
+	claims, ok := clerk.SessionClaimsFromContext(c.Request().Context())
+	if !ok {
+		auth.server.Logger.Error().
+			Str("function", "RequireAuth").
+			Str("request_id", GetRequestID(c)).
+			Dur("duration", time.Since(start)).
+			Msg("could not get session claims from context")
+
+		return errs.NewUnauthorizedError("Unauthorized", false)
+	}
+
+	c.Set("user_id", claims.Subject)
+	c.Set("user_role", claims.ActiveOrganizationRole)
+	c.Set("permissions", claims.Claims.ActiveOrganizationPermissions)
+
+	auth.server.Logger.Info().
+		Str("function", "RequireAuth").
+		Str("user_id", claims.Subject).
+		Str("request_id", GetRequestID(c)).
+		Dur("duration", time.Since(start)).
+		Msg("user authenticated successfully")
+
+	return next(c)
+}
